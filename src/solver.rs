@@ -3,7 +3,7 @@
 use num;
 use grid;
 use boundary;
-use io::vtk;
+use io::{vtk, Serializable};
 use time;
 use traits::{Distribution, DistributionStorage};
 
@@ -208,3 +208,27 @@ impl<P: ::Physics> Solver<P> {
         });
     }
 }
+
+/*
+impl<P: ::Physics> Serializable for Solver<P> {
+    type CellIndex = grid::Idx;
+    type CellGeometry = geometry::Square;
+    type CellIndexIterator = _;
+    fn cells(&self) -> {
+        self.grid.ids()
+    }
+    fn geometry(&self, c: Self::CellIndex) -> Self::CellGeometry {
+        self.grid.geometry(c)
+    }
+    fn cell_data<T: CellDataWriter<Self::CellIndex>>(&self, writer: &mut T) {
+        self.physics.write(
+            writer,
+            |c| self.solid_boundary(c),
+            |c, n| *self.f_ref(c, n),
+        );
+        writer.write_scalar("boundary_idx", |c| {
+            self.bcs.idx(self.grid.x(c)).map_or(-1 as i32, |v| v as i32)
+        });
+    }
+}
+*/
