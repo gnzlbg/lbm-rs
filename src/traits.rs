@@ -2,7 +2,8 @@ use num;
 use geometry;
 use io::vtk;
 use grid;
-//use std::ops::{Deref, Index};
+
+/// TODO: move traits to appropriate modules
 
 pub trait Distribution: Sized + Copy + Sync + Send {
     type Storage: AsRef<[num]> + AsMut<[num]> + Default;

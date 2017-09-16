@@ -1,6 +1,8 @@
 use num;
 use grid;
 
+mod point;
+
 mod circle;
 mod plane;
 mod rectangle;
