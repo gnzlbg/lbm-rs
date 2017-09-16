@@ -47,10 +47,11 @@ pub struct SingleRelaxationTime {
 impl<D: Distribution> ::Collision<D> for SingleRelaxationTime {
     #[inline(always)]
     fn collision<H, IH>(&self, f_hlp: &H, idx_h: IH) -> D::Storage
-        where IH: Fn(&H, D) -> num
+    where
+        IH: Fn(&H, D) -> num,
     {
         // local density and vel components:
-        let f_h = |n| idx_h(&f_hlp, n);
+        let f_h = |n| idx_h(f_hlp, n);
         let dloc = D::density(&f_h);
         let [u_x, u_y] = D::velocities(&f_h);
 
@@ -73,7 +74,9 @@ impl<D: Distribution> ::Collision<D> for SingleRelaxationTime {
 
             let mut n_equ_ = D::Storage::default();
             let n_equ = n_equ_.as_mut();
-            n_equ[0] = D::center().constant() * dloc * (1. - f2); // zero-th velocity density
+
+            // zero-th velocity density
+            n_equ[0] = D::center().constant() * dloc * (1. - f2);
 
             for n in D::direct() {
                 let f3 = n.constant() * dloc;
@@ -90,15 +93,15 @@ impl<D: Distribution> ::Collision<D> for SingleRelaxationTime {
 
             // relaxation step:
             for n in D::all() {
-                u_n[n.value()] = f_h(n) +
-                                 self.omega * (n_equ[n.value()] - f_h(n));
+                u_n[n.value()] =
+                    f_h(n) + self.omega * (n_equ[n.value()] - f_h(n));
             }
         }
         u_n_
     }
 }
 
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone)]
 pub struct NavierStokes<D: Distribution, C: ::Collision<D>> {
     pub inflow_density: num,
     pub inflow_accel: num,
@@ -123,11 +126,14 @@ impl<D: Distribution, C: ::Collision<D>> NavierStokes<D, C> {
         } else {
             D::pressure(f)
         }
-
     }
     #[inline(always)]
     pub fn velocities<F: Fn(D) -> num>(solid: bool, f: F) -> [num; 2] {
-        if solid { [0., 0.] } else { D::velocities(f) }
+        if solid {
+            [0., 0.]
+        } else {
+            D::velocities(f)
+        }
     }
 }
 
@@ -136,7 +142,8 @@ impl<D: Distribution, C: ::Collision<D>> ::traits::Physics
     type Distribution = D;
     #[inline(always)]
     fn collision<H, IH>(&self, f_hlp: &H, idx_h: IH) -> D::Storage
-        where IH: Fn(&H, D) -> num
+    where
+        IH: Fn(&H, D) -> num,
     {
         self.collision.collision(f_hlp, idx_h)
     }
@@ -145,13 +152,15 @@ impl<D: Distribution, C: ::Collision<D>> ::traits::Physics
         D::density(f)
     }
 
-    fn write<O, F>(&self,
-                   mut vtk_writer: vtk::CellDataWriter,
-                   obst: O,
-                   f: F)
-                   -> vtk::CellDataWriter
-        where F: Fn(grid::Idx, D) -> num,
-              O: Fn(grid::Idx) -> bool
+    fn write<O, F>(
+        &self,
+        mut vtk_writer: vtk::CellDataWriter,
+        obst: O,
+        f: F,
+    ) -> vtk::CellDataWriter
+    where
+        F: Fn(grid::Idx, D) -> num,
+        O: Fn(grid::Idx) -> bool,
     {
         vtk_writer.write_scalar("p", |c| self.pressure(obst(c), |n| f(c, n)));
         vtk_writer

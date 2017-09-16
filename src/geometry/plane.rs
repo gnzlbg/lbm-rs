@@ -16,9 +16,9 @@ impl Geometry for Plane {
     #[inline(always)]
     fn contains(&self, x: grid::X) -> bool {
         match (self.n.0, self.n.1, x.0, x.1) {
-            (1, 0, x, _) => if x > self.x.0 { false } else { true },
-            (0, 1, _, y) => if y > self.x.1 { false } else { true },
-            (0, -1, _, y) => if y < self.x.1 { false } else { true },
+            (1, 0, x, _) => !(x > self.x.0),
+            (0, 1, _, y) => !(y > self.x.1),
+            (0, -1, _, y) => !(y < self.x.1),
             _ => unimplemented!(),
         }
     }

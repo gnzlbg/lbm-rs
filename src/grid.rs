@@ -32,14 +32,14 @@ impl StructuredRectangular {
     /// Iterator over all point indices in the grid
     #[inline(always)]
     pub fn ids(&self) -> impl Iterator<Item = Idx> {
-        (0..self.size()).map(|v| Idx(v))
+        (0..self.size()).map(Idx)
     }
 
     /// Parallel iterator over all point indices in the grid
     #[inline(always)]
-    pub fn par_ids
-        (&self)
-         -> rayon::iter::Map<rayon::range::Iter<usize>, fn(usize) -> Idx> {
+    pub fn par_ids(
+        &self,
+    ) -> rayon::iter::Map<rayon::range::Iter<usize>, fn(usize) -> Idx> {
         use rayon::iter::IntoParallelIterator;
         use rayon::iter::ParallelIterator;
         (0..self.size()).into_par_iter().map(Idx::new)
@@ -125,8 +125,6 @@ mod tests {
 
 
                 c += 1;
-
-
             }
         }
     }

@@ -1,11 +1,13 @@
-use ::num;
+use num;
 use grid;
 
 mod circle;
 mod plane;
+mod rectangle;
 
 pub use self::circle::Circle;
 pub use self::plane::Plane;
+pub use self::rectangle::Rectangle;
 
 #[repr(usize)]
 pub enum Direction {
@@ -39,7 +41,7 @@ impl Direction {
     #[inline(always)]
     pub fn num_array(&self) -> [num; 2] {
         let [x, y] = self.array();
-        [x as num, y as num]
+        [num::from(x), num::from(y)]
     }
 }
 

@@ -21,7 +21,7 @@ impl<P: ::Physics> Solver<P> {
     pub fn new(grid: grid::StructuredRectangular, physics: P) -> Solver<P> {
         Solver {
             grid,
-            bcs: boundary::Handler::new(),
+            bcs: boundary::Handler::default(),
             physics,
             f: vec![0.; grid.size() * P::Distribution::size()]
                 .into_boxed_slice(),
@@ -30,9 +30,11 @@ impl<P: ::Physics> Solver<P> {
         }
     }
 
-    /// Initialize distributions functions from the target `initial_distributions`.
+    /// Initialize distributions functions using `initial_distributions(x)`.
     pub fn initialize<F>(&mut self, initial_distributions: F)
-        where F: Fn(grid::X) -> DistributionStorage<P::Distribution>
+    where
+        F: Fn(grid::X)
+            -> DistributionStorage<P::Distribution>,
     {
         for c in self.grid.ids() {
             let fs = initial_distributions(self.grid.x(c));
@@ -65,15 +67,15 @@ impl<P: ::Physics> Solver<P> {
     /// Streaming step
     fn streaming(&mut self) {
         use rayon::prelude::*;
-        let mut f_hlp = ::std::mem::replace(&mut self.f_hlp,
-                                            Default::default());
+        let mut f_hlp =
+            ::std::mem::replace(&mut self.f_hlp, Default::default());
         f_hlp
             .par_chunks_mut(P::Distribution::size())
             .zip(self.grid.par_ids())
             .for_each(|(f_hlp, c)| for n in P::Distribution::all() {
-                          let cn = self.grid.neighbor(c, n);
-                          f_hlp[n.value()] = *self.f_ref(cn, n);
-                      });
+                let cn = self.grid.neighbor(c, n);
+                f_hlp[n.value()] = *self.f_ref(cn, n);
+            });
         self.f_hlp = f_hlp;
     }
 
@@ -104,12 +106,13 @@ impl<P: ::Physics> Solver<P> {
         f.par_chunks_mut(P::Distribution::size())
             .zip(self.grid.par_ids())
             .for_each(|(f, c)| {
-                let r = self.bcs
-                    .apply(&f,
-                           &self.f_hlp,
-                           |v, n: P::Distribution| v[n.value()],
-                           |v, n| v[Self::f_idx(c, n)],
-                           self.grid.x(c));
+                let r = self.bcs.apply(
+                    &f,
+                    &self.f_hlp,
+                    |v, n: P::Distribution| v[n.value()],
+                    |v, n| v[Self::f_idx(c, n)],
+                    self.grid.x(c),
+                );
 
                 if let Some(r) = r {
                     for n in P::Distribution::all() {
@@ -173,28 +176,33 @@ impl<P: ::Physics> Solver<P> {
     /// Prints line info of a whole iteration step
     fn step(&self, n_it: usize, duration: time::Duration) {
         let integral = self.integral();
-        println!("#{} | integral: {} | duration: {} ms",
-                 n_it,
-                 integral,
-                 duration.num_milliseconds());
+        println!(
+            "#{} | integral: {} | duration: {} ms",
+            n_it,
+            integral,
+            duration.num_milliseconds()
+        );
     }
     /// Prints line info of an iteration sub-step
     fn substep(&self, name: &str, duration: time::Duration) {
         let res = self.integral();
-        println!("# [{}] | integral: {} | duration: {} \u{03BC}s",
-                 name,
-                 res,
-                 duration.num_microseconds().unwrap());
+        println!(
+            "# [{}] | integral: {} | duration: {} \u{03BC}s",
+            name,
+            res,
+            duration.num_microseconds().unwrap()
+        );
     }
 
     /// Writes the solution to a VTK file.
     fn write_vtk(&self, n_it: usize) {
         let fname = format!("lbm_rs_output_{}", n_it);
         let mut vtk_writer = vtk::write_vtk(&fname, self.grid);
-        vtk_writer = self.physics
-            .write(vtk_writer,
-                   |c| self.solid_boundary(c),
-                   |c, n| *self.f_ref(c, n));
+        vtk_writer = self.physics.write(
+            vtk_writer,
+            |c| self.solid_boundary(c),
+            |c, n| *self.f_ref(c, n),
+        );
         vtk_writer.write_scalar("boundary_idx", |c| {
             self.bcs.idx(self.grid.x(c)).map_or(-1 as i32, |v| v as i32)
         });

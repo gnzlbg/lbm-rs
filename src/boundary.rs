@@ -2,7 +2,7 @@ use geometry::Geometry;
 use grid;
 use num;
 
-#[derive(Copy,Clone,PartialEq,PartialOrd)]
+#[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub enum Type {
     BounceBack,
     Inflow(num, num),
@@ -40,14 +40,12 @@ impl<T: Geometry + Send + Sync> AnyCondition for Condition<T> {
     }
 }
 
+#[derive(Default)]
 pub struct Handler {
     boundary_conditions: Vec<Box<AnyCondition>>,
 }
 
 impl Handler {
-    pub fn new() -> Handler {
-        Handler { boundary_conditions: Vec::new() }
-    }
     pub fn push(&mut self, bc: Box<AnyCondition>) {
         self.boundary_conditions.push(bc);
     }
@@ -64,27 +62,27 @@ impl Handler {
 
     #[inline(always)]
     pub fn idx(&self, x: grid::X) -> Option<usize> {
-        let mut idx = 0;
-        for bc in &self.boundary_conditions {
+        for (idx, bc) in self.boundary_conditions.iter().enumerate() {
             if bc.contains(x) {
                 return Some(idx);
             }
-            idx += 1;
         }
         None
     }
 
     #[inline(always)]
-    pub fn apply<F, H, IF, IH, D>(&self,
-                                  f: &F,
-                                  f_hlp: &H,
-                                  idx_f: IF,
-                                  idx_h: IH,
-                                  x: grid::X)
-                                  -> Option<D::Storage>
-        where IF: Fn(&F, D) -> num,
-              IH: Fn(&H, D) -> num,
-              D: ::Distribution
+    pub fn apply<F, H, IF, IH, D>(
+        &self,
+        f: &F,
+        f_hlp: &H,
+        idx_f: IF,
+        idx_h: IH,
+        x: grid::X,
+    ) -> Option<D::Storage>
+    where
+        IF: Fn(&F, D) -> num,
+        IH: Fn(&H, D) -> num,
+        D: ::Distribution,
     {
         let mut r: Option<D::Storage> = None;
 
@@ -118,48 +116,42 @@ impl Handler {
                         for n in D::all() {
                             let t = density * accel * n.constant();
                             match n.direction() {
-                                W => {
-                                    if s[D::from_direction(W)
-                                           .unwrap()
-                                           .value()] -
-                                       t >
-                                       0. {
-                                        s[D::from_direction(E)
+                                W => if s
+                                    [D::from_direction(W).unwrap().value()] -
+                                    t >
+                                    0.
+                                {
+                                    s[D::from_direction(E)
                                             .unwrap()
                                             .value()] += t;
-                                        s[D::from_direction(W)
+                                    s[D::from_direction(W)
                                             .unwrap()
                                             .value()] -= t;
-                                    }
-                                }
-                                NW => {
-                                    if s[D::from_direction(NW)
-                                           .unwrap()
-                                           .value()] -
-                                       t >
-                                       0. {
-                                        s[D::from_direction(SE)
-                                            .unwrap()
-                                            .value()] += t;
-                                        s[D::from_direction(NW)
-                                            .unwrap()
-                                            .value()] -= t;
-                                    }
-                                }
-                                SW => {
-                                    if s[D::from_direction(SW)
-                                           .unwrap()
-                                           .value()] -
-                                       t >
-                                       0. {
-                                        s[D::from_direction(NE)
-                                            .unwrap()
-                                            .value()] += t;
-                                        s[D::from_direction(SW)
-                                            .unwrap()
-                                            .value()] -= t;
-                                    }
-                                }
+                                },
+                                NW => if s
+                                    [D::from_direction(NW).unwrap().value()] -
+                                    t >
+                                    0.
+                                {
+                                    s[D::from_direction(SE)
+                                          .unwrap()
+                                          .value()] += t;
+                                    s[D::from_direction(NW)
+                                          .unwrap()
+                                          .value()] -= t;
+                                },
+                                SW => if s
+                                    [D::from_direction(SW).unwrap().value()] -
+                                    t >
+                                    0.
+                                {
+                                    s[D::from_direction(NE)
+                                          .unwrap()
+                                          .value()] += t;
+                                    s[D::from_direction(SW)
+                                          .unwrap()
+                                          .value()] -= t;
+                                },
                                 _ => {}
                             }
                         }

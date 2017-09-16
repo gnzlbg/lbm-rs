@@ -90,16 +90,16 @@ impl traits::Distribution for D2Q9 {
     fn from_direction(d: Direction) -> Option<Self> {
         use self::D2Q9::*;
         Some(match d {
-                 Direction::C => C,
-                 Direction::E => E,
-                 Direction::N => N,
-                 Direction::W => W,
-                 Direction::S => S,
-                 Direction::NE => NE,
-                 Direction::NW => NW,
-                 Direction::SW => SW,
-                 Direction::SE => SE,
-             })
+            Direction::C => C,
+            Direction::E => E,
+            Direction::N => N,
+            Direction::W => W,
+            Direction::S => S,
+            Direction::NE => NE,
+            Direction::NW => NW,
+            Direction::SW => SW,
+            Direction::SE => SE,
+        })
     }
     #[inline(always)]
     fn center() -> Self {

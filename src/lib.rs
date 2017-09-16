@@ -1,8 +1,10 @@
 #![feature(conservative_impl_trait)]
 #![feature(slice_patterns)]
 
-pub extern crate rayon;
+#![cfg_attr(feature = "cargo-clippy", allow(inline_always))]
+
 extern crate time;
+pub extern crate rayon;
 
 // TODO: parametrize on floating point type (currently num)
 

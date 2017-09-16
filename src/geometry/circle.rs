@@ -1,4 +1,4 @@
-use ::num;
+use num;
 use grid;
 use super::Geometry;
 
@@ -23,8 +23,7 @@ impl Circle {
 impl Geometry for Circle {
     #[inline(always)]
     fn contains(&self, x: grid::X) -> bool {
-        ((self.x_c - x.0 as num).powf(2.) +
-         (self.y_c - x.1 as num).powf(2.))
+        ((self.x_c - x.0 as num).powf(2.) + (self.y_c - x.1 as num).powf(2.))
             .sqrt() - self.r < 0.
     }
 }

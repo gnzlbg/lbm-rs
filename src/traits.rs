@@ -5,7 +5,7 @@ use grid;
 //use std::ops::{Deref, Index};
 
 pub trait Distribution: Sized + Copy + Sync + Send {
-    type Storage: AsRef<[num]> + AsMut<[num]> + Default; // + Index<usize, Output = num>;
+    type Storage: AsRef<[num]> + AsMut<[num]> + Default;
     type AllIterator: Iterator<Item = Self>;
     #[inline(always)]
     fn all() -> Self::AllIterator;
@@ -45,30 +45,35 @@ pub trait DiagonalDistribution: Distribution {
 pub trait Collision<D: Distribution>: Copy + Sync + Send {
     #[inline(always)]
     fn collision<H, IH>(&self, f_hlp: &H, idx_h: IH) -> D::Storage
-        where IH: Fn(&H, D) -> num;
+    where
+        IH: Fn(&H, D) -> num;
 }
 
 
 pub trait Physics: Copy + Sync + Send {
     type Distribution: Distribution;
     #[inline(always)]
-    fn collision<FH, IFH>(&self,
-                          f_h: &FH,
-                          idx_f_h: IFH)
-                          -> DistributionStorage<Self::Distribution>
-        where IFH: Fn(&FH, Self::Distribution) -> num;
+    fn collision<FH, IFH>(
+        &self,
+        f_h: &FH,
+        idx_f_h: IFH,
+    ) -> DistributionStorage<Self::Distribution>
+    where
+        IFH: Fn(&FH, Self::Distribution) -> num;
     #[inline(always)]
     fn integral<F: Fn(Self::Distribution) -> num>(_: F) -> num {
         0.0
     }
 
-    fn write<O, F>(&self,
-                   vtk_writer: vtk::CellDataWriter,
-                   _: O,
-                   _: F)
-                   -> vtk::CellDataWriter
-        where F: Fn(grid::Idx, Self::Distribution) -> num,
-              O: Fn(grid::Idx) -> bool
+    fn write<O, F>(
+        &self,
+        vtk_writer: vtk::CellDataWriter,
+        _: O,
+        _: F,
+    ) -> vtk::CellDataWriter
+    where
+        F: Fn(grid::Idx, Self::Distribution) -> num,
+        O: Fn(grid::Idx) -> bool,
     {
         vtk_writer
     }

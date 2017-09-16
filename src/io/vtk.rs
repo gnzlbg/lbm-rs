@@ -43,9 +43,11 @@ impl CellDataWriter {
         }
     }
 
-    pub fn write_scalar<T: Primitive, F: Fn(Idx) -> T>(&mut self,
-                                                       name: &str,
-                                                       f: F) {
+    pub fn write_scalar<T: Primitive, F: Fn(Idx) -> T>(
+        &mut self,
+        name: &str,
+        f: F,
+    ) {
         if !self.init {
             // Write cell data
             self.buffer
@@ -68,7 +70,10 @@ pub fn write_vtk(fname: &str, grid: StructuredRectangular) -> CellDataWriter {
     let mut buffer = File::create(format!("{}.vtk", fname)).unwrap();
 
     // Write Header
-    buffer.write(b"# vtk DataFile Version 2.0\nLBM test output\nASCII\nDATASET UNSTRUCTURED_GRID\n"
+    buffer.write(b"# vtk DataFile Version 2.0\n\
+                   LBM test output\n\
+                   ASCII\n\
+                   DATASET UNSTRUCTURED_GRID\n"
     ).unwrap();
 
     let x_stencil = [-1., 1., -1., 1.];
@@ -89,23 +94,26 @@ pub fn write_vtk(fname: &str, grid: StructuredRectangular) -> CellDataWriter {
             buffer
                 .write(format!("{} {} 0.0\n", xp, yp).as_bytes())
                 .unwrap();
-
         }
     }
 
     // Write grid cells:
     buffer
-        .write(format!("CELLS {} {}\n", grid.size(), grid.size() * 5)
-                   .as_bytes())
+        .write(
+            format!("CELLS {} {}\n", grid.size(), grid.size() * 5).as_bytes(),
+        )
         .unwrap();
     for c in grid.ids() {
         buffer
-            .write(format!("4 {} {} {} {}\n",
-                           4 * c.0,
-                           4 * c.0 + 1,
-                           4 * c.0 + 2,
-                           4 * c.0 + 3)
-                           .as_bytes())
+            .write(
+                format!(
+                    "4 {} {} {} {}\n",
+                    4 * c.0,
+                    4 * c.0 + 1,
+                    4 * c.0 + 2,
+                    4 * c.0 + 3
+                ).as_bytes(),
+            )
             .unwrap();
     }
 
