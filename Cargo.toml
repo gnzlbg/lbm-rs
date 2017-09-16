@@ -1,0 +1,25 @@
+[package]
+name = "lbm"
+version = "0.1.0"
+authors = ["gnzlbg <gonzalobg88@gmail.com>"]
+
+[dependencies]
+time = "0.1.*"
+rayon = "0.8.*"
+
+[lib]
+name = "lbm"
+path = "src/lib.rs"
+
+[[bin]]
+name = "bin"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 1
+panic = 'abort'
