@@ -30,12 +30,12 @@ impl Primitive for i32 {
 
 pub struct CellDataWriter {
     buffer: File,
-    grid: Size,
+    grid: StructuredRectangular,
     init: bool,
 }
 
 impl CellDataWriter {
-    pub fn new(buffer: File, grid: Size) -> CellDataWriter {
+    pub fn new(buffer: File, grid: StructuredRectangular) -> CellDataWriter {
         CellDataWriter {
             buffer: buffer,
             grid: grid,
@@ -64,7 +64,7 @@ impl CellDataWriter {
     }
 }
 
-pub fn write_vtk(fname: &str, grid: Size) -> CellDataWriter {
+pub fn write_vtk(fname: &str, grid: StructuredRectangular) -> CellDataWriter {
     let mut buffer = File::create(format!("{}.vtk", fname)).unwrap();
 
     // Write Header

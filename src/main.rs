@@ -19,7 +19,7 @@ fn main() {
         {
             let cyl = Box::new(boundary::Condition::new(
             boundary::Type::BounceBack,
-            geometry::Cylinder::new(grid.x, grid.y)
+            geometry::Circle::new(grid.x, grid.y)
         ));
             s.bcs.push(cyl);
         }
